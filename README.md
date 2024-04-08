@@ -1,6 +1,6 @@
 # opstracker
 
-A new Flutter project.
+Opstracker is a mobile application made for user like operations person to track the compliance, blocker and tracker data of employees in an organization.
 
 ## Getting Started
 
