@@ -42,12 +42,22 @@ class DefaultersBloc extends Bloc<DefaultersEvent, DefaultersState> {
     on<FetchDefaultersEvent>((event, emit) async {
       emit(DefaultersLoadingState());
       try {
-        final List<Defaulter> defaulters =
+        final Map<String, Map<String, dynamic>> missedDatesMap =
             await _defaultersService.fetchDefaulters(
           startDate: event.startDate,
           endDate: event.endDate,
           buId: event.buId,
         );
+
+        // Construct list of Defaulter objects from missedDatesMap
+        final List<Defaulter> defaulters = missedDatesMap.entries.map((entry) {
+          return Defaulter(
+            name: entry.key,
+            empId: entry.value['empId'] ?? '', // Extract empId from map
+            missedDates: (entry.value['missedDates'] as List<DateTime>?) ?? [],
+          );
+        }).toList();
+
         emit(DefaultersLoadedState(defaulters: defaulters));
       } catch (e) {
         emit(DefaultersErrorState(errorMessage: e.toString()));

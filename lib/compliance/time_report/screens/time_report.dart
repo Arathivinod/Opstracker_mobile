@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:opstracker/compliance/time_report/blocs/defaulters_bloc.dart';
 import 'package:opstracker/compliance/time_report/models/defaulters_model.dart';
 
 class TimeReportScreen extends StatelessWidget {
   const TimeReportScreen({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => DefaultersBloc(),
-      child: TimeReportScreenBody(),
+      child: const TimeReportScreenBody(),
     );
   }
 }
@@ -28,6 +30,7 @@ class _TimeReportScreenBodyState extends State<TimeReportScreenBody> {
   void initState() {
     super.initState();
     _defaultersBloc = BlocProvider.of<DefaultersBloc>(context);
+
     // Get today's date
     DateTime now = DateTime.now();
 
@@ -35,8 +38,11 @@ class _TimeReportScreenBodyState extends State<TimeReportScreenBody> {
     String todayDate =
         '${now.year}-${_formatDateValue(now.month)}-${_formatDateValue(now.day)}';
 
+    String monthStartDate = DateFormat('yyyy-MM-dd')
+        .format(DateTime(DateTime.now().year, DateTime.now().month, 01));
+
     _defaultersBloc.add(FetchDefaultersEvent(
-      startDate: todayDate,
+      startDate: monthStartDate,
       endDate: todayDate,
       buId: 51, // Replace with actual buId
     ));
@@ -51,7 +57,7 @@ class _TimeReportScreenBodyState extends State<TimeReportScreenBody> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Defaulters Report'),
+        title: const Text('Defaulters list'),
       ),
       body: BlocBuilder<DefaultersBloc, DefaultersState>(
         builder: (context, state) {
@@ -70,13 +76,55 @@ class _TimeReportScreenBodyState extends State<TimeReportScreenBody> {
   }
 
   Widget _buildDefaultersList(List<Defaulter> defaulters) {
+    // Sort the defaulters list alphabetically by name
+    defaulters.sort((a, b) => a.name.compareTo(b.name));
+
     return ListView.builder(
       itemCount: defaulters.length,
       itemBuilder: (context, index) {
         final defaulter = defaulters[index];
         return ListTile(
           title: Text(defaulter.name),
-          subtitle: Text(defaulter.empId),
+          subtitle: Text('Emp ID: ${defaulter.empId}'),
+          onTap: () {
+            _showMissedDatesBottomSheet(context, defaulter.missedDates);
+          },
+        );
+      },
+    );
+  }
+
+  void _showMissedDatesBottomSheet(
+      BuildContext context, List<DateTime> missedDates) {
+    print('Missed Dates List: $missedDates');
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return Container(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Missed Dates',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 10),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: missedDates.length,
+                  itemBuilder: (context, index) {
+                    return ListTile(
+                      title: Text(
+                        DateFormat('dd/MM/yyyy').format(missedDates[index]),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
         );
       },
     );

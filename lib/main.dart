@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:opstracker/compliance/time_report/screens/time_report.dart';
 
 void main() {
-  runApp(OpstrackerApp());
+  runApp(MyApp());
 }
 
-class OpstrackerApp extends StatelessWidget {
+class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
